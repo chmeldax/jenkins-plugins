@@ -9,7 +9,6 @@ class TestPlugin(unittest.TestCase):
     def setUp(self):
         jenkins_plugins.PLUGIN_DIRECTORY = '/tmp'
         self._name = 'fake-name'
-        self._fake_content = 'fake content'
         self._delete_plugins()
 
     def tearDown(self):
@@ -25,9 +24,14 @@ class TestPlugin(unittest.TestCase):
     @urlmatch(netloc=r'(.*\.)?jenkins-ci\.org$')
     def _jenkins_mock(self, url, request):
         if url[2] == '/latest/{name}.hpi'.format(name=self._name):
-            file_path = os.path.dirname(os.path.realpath(__file__)) + '/fixtures/dependencies.hpi'
+            file_name = 'dependencies.hpi'
         else:
-            file_path = os.path.dirname(os.path.realpath(__file__)) + '/fixtures/no_dependencies.hpi'
+            file_name = 'no_dependencies.hpi'
+        return self._read_hpi(file_name)
+
+    def _read_hpi(self, file_name):
+        root_folder = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(root_folder, 'fixtures', file_name)
         with open(file_path, 'br') as file:
             return file.read()
 
@@ -39,16 +43,32 @@ class TestPlugin(unittest.TestCase):
                 pass
 
     @property
+    def _plugins(self):
+        # Fake-name plugin along with its dependencies
+        return ['fake-name', 'credentials', 'durable-task']
+
+    @property
     def _plugin_paths(self):
-        return ['/tmp/{file}.hpi'.format(file=x) for x in ['fake-name', 'credentials', 'durable-task']]
+        return ['/tmp/{file}.hpi'.format(file=x) for x in self._plugins]
 
 
 class TestManifest(unittest.TestCase):
 
     def test_dependencies(self):
-        fixtures_folder = os.path.dirname(os.path.realpath(__file__)) + '/fixtures/'
-        self.assertListEqual(['credentials', 'durable-task'], jenkins_plugins.Manifest(fixtures_folder + 'dependencies.hpi').dependencies)
-        self.assertListEqual([], jenkins_plugins.Manifest(fixtures_folder + 'no_dependencies.hpi').dependencies)
+        file_path = os.path.join(self._fixtures_folder, 'dependencies.hpi')
+        manifest = jenkins_plugins.Manifest(file_path)
+        dependencies = ['credentials', 'durable-task']
+        self.assertListEqual(dependencies, manifest.dependencies)
+
+    def test_no_dependencies(self):
+        file_path = os.path.join(self._fixtures_folder, 'no_dependencies.hpi')
+        manifest = jenkins_plugins.Manifest(file_path)
+        self.assertListEqual([], manifest.dependencies)
+
+    @property
+    def _fixtures_folder(self):
+        root_folder = os.path.dirname(os.path.realpath(__file__))
+        return os.path.join(root_folder, 'fixtures')
 
 if __name__ == '__main__':
     unittest.main()
