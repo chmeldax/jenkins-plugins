@@ -7,9 +7,6 @@ import os.path
 PLUGIN_DIRECTORY = '/home/chmelda/jenkins'  # With paths
 
 
-CACHE = {}
-
-
 class Plugin(object):
 
     def __init__(self, name):
@@ -67,6 +64,3 @@ class Manifest(object):
              with zip_file.open('META-INF/MANIFEST.MF', 'r') as manifest_file:
                  for line in manifest_file:
                      yield line
-
-
-Plugin('kubernetes').download()
