@@ -2,6 +2,7 @@ import requests
 import zipfile
 import re
 import os.path
+import argparse
 
 #PLUGIN_DIRECTORY = '/var/lib/jenkins'  # With paths
 PLUGIN_DIRECTORY = '/home/chmelda/jenkins'  # With paths
@@ -64,3 +65,11 @@ class Manifest(object):
              with zip_file.open('META-INF/MANIFEST.MF', 'r') as manifest_file:
                  for line in manifest_file:
                      yield line
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("plugins",nargs="*")
+    args = parser.parse_args()
+
+    for plugin in args.plugins:
+        Plugin(plugin).download()
