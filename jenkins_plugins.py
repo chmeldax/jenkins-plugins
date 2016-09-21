@@ -4,8 +4,7 @@ import re
 import os.path
 import argparse
 
-# PLUGIN_DIRECTORY = '/var/lib/jenkins'
-PLUGIN_DIRECTORY = '/home/chmelda/jenkins'  # With paths
+PLUGIN_DIRECTORY = os.path.join(os.sep, 'var', 'lib', 'jenkins')
 
 
 class Plugin(object):
